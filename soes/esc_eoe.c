@@ -1,11 +1,10 @@
 /*
- * Licensed under the GNU General Public License version 2 with exceptions. See
- * LICENSE file in the project root for full license information
+ * 根据GNU通用公共许可证第2版及其例外条款授权。有关完整的许可证信息，请参见项目根目录中的LICENSE文件
  */
 
- /** \file
+/** \file
  * \brief
- * Ethernet over EtherCAT (EoE) module.
+ * 以太网在EtherCAT上的模块（EoE）。
  */
 
 #include <cc.h>
@@ -34,17 +33,17 @@
                             ((uint32_t)((c) & 0xff) << 8)  | \
                             (uint32_t)((d) & 0xff))
 
-/** Get one byte from the 4-byte address */
+/** 从4字节地址获取一个字节 */
 #define eoe_ip4_addr1(ipaddr) (((const uint8_t*)(&(ipaddr)->addr))[0])
 #define eoe_ip4_addr2(ipaddr) (((const uint8_t*)(&(ipaddr)->addr))[1])
 #define eoe_ip4_addr3(ipaddr) (((const uint8_t*)(&(ipaddr)->addr))[2])
 #define eoe_ip4_addr4(ipaddr) (((const uint8_t*)(&(ipaddr)->addr))[3])
 
-/** Set an IP address given by the four byte-parts */
+/** 根据四个字节部分设置IP地址 */
 #define EOE_IP4_ADDR_TO_U32(ipaddr,a,b,c,d)  \
    (ipaddr)->addr = EOE_HTONL(EOE_MAKEU32(a,b,c,d))
 
-/** Header frame info 1 */
+/** 头帧信息 1 */
 #define EOE_HDR_FRAME_TYPE_OFFSET      0
 #define EOE_HDR_FRAME_TYPE             (0xF << 0)
 #define EOE_HDR_FRAME_TYPE_SET(x)      ((uint16_t)(((x) & 0xF) << 0))
@@ -66,7 +65,7 @@
 #define EOE_HDR_TIME_REQUEST_SET(x)    ((uint16_t)(((x) & 0x1) << 10))
 #define EOE_HDR_TIME_REQUEST_GET(x)    (((x) >> 10) & 0x1)
 
-/** Header frame info 2 */
+/** 头帧信息 2 */
 #define EOE_HDR_FRAG_NO_OFFSET         0
 #define EOE_HDR_FRAG_NO                (0x3F << 0)
 #define EOE_HDR_FRAG_NO_SET(x)         ((uint16_t)(((x) & 0x3F) << 0))
@@ -80,7 +79,7 @@
 #define EOE_HDR_FRAME_NO_SET(x)        ((uint16_t)(((x) & 0xF) << 12))
 #define EOE_HDR_FRAME_NO_GET(x)        (((x) >> 12) & 0xF)
 
-/** EOE param */
+/** EOE 参数 */
 #define EOE_PARAM_OFFSET                  4
 #define EOE_PARAM_MAC_INCLUDE             (0x1 << 0)
 #define EOE_PARAM_IP_INCLUDE              (0x1 << 1)
@@ -89,11 +88,11 @@
 #define EOE_PARAM_DNS_IP_INCLUDE          (0x1 << 4)
 #define EOE_PARAM_DNS_NAME_INCLUDE        (0x1 << 5)
 
-/** EoE frame types */
+/** EoE 帧类型 */
 #define EOE_FRAG_DATA                  0
 #define EOE_INIT_RESP_TIMESTAMP        1
-#define EOE_INIT_REQ                   2 /* Spec SET IP REQ */
-#define EOE_INIT_RESP                  3 /* Spec SET IP RESP */
+#define EOE_INIT_REQ                   2 /* 规范设置IP请求 */
+#define EOE_INIT_RESP                  3 /* 规范设置IP响应 */
 #define EOE_SET_ADDR_FILTER_REQ        4
 #define EOE_SET_ADDR_FILTER_RESP       5
 #define EOE_GET_IP_PARAM_REQ           6
@@ -101,23 +100,23 @@
 #define EOE_GET_ADDR_FILTER_REQ        8
 #define EOE_GET_ADDR_FILTER_RESP       9
 
-/** Define number of ports available.(Only one is supported currently */
+/** 定义可用端口数量（目前仅支持一个） */
 #define EOE_NUMBER_OF_PORTS   1
 #define EOE_PORT_INDEX(x)     ((x > 0) ? (x - 1) : 0)
-/** DNS length according to ETG 1000.6 */
+/** DNS长度根据ETG 1000.6 */
 #define EOE_DNS_NAME_LENGTH  32
-/** Ethernet address length not including VLAN */
+/** 不包括VLAN的以太网地址长度 */
 #define EOE_ETHADDR_LENGTH    6
-/** IPv4 address length */
+/** IPv4地址长度 */
 #define EOE_IP4_LENGTH        4U /* sizeof(uint32_t) */
 
-/** EOE ip4 address in network order */
+/** EOE IPv4地址（网络字节序） */
 struct eoe_ip4_addr {
   uint32_t addr;
 };
 typedef struct eoe_ip4_addr eoe_ip4_addr_t;
 
-/** EOE ethernet address */
+/** EOE以太网地址 */
 CC_PACKED_BEGIN
 typedef struct CC_PACKED eoe_ethaddr
 {
@@ -127,29 +126,29 @@ CC_PACKED_END
 
 typedef struct
 {
-   /** Pointer to current RX buffer to fill */
+   /** 指向当前RX缓冲区的指针 */
    eoe_pbuf_t rxebuf;
-   /** Pointer to current TX buff to Send */
+   /** 指向当前TX缓冲区的指针 */
    eoe_pbuf_t txebuf;
 
-   /** Current RX fragment number */
+   /** 当前RX片段编号 */
    uint8_t rxfragmentno;
-   /** Complete RX frame size of current frame */
+   /** 当前帧的完整RX帧大小 */
    uint32_t rxframesize;
-   /** Current RX data offset in frame */
+   /** 当前帧中的RX数据偏移量 */
    uint32_t rxframeoffset;
-   /** Current RX frame number */
+   /** 当前RX帧编号 */
    uint16_t rxframeno;
 
-   /** Current TX fragment number */
+   /** 当前TX片段编号 */
    uint8_t txfragmentno;
-   /** Complete TX frame size of current frame */
+   /** 当前帧的完整TX帧大小 */
    uint32_t txframesize;
-   /** Current TX data offset in frame */
+   /** 当前帧中的TX数据偏移量 */
    uint32_t txframeoffset;
 } _EOEvar;
 
-/** EoE IP request structure */
+/** EoE IP请求结构 */
 typedef struct eoe_param
 {
    uint8_t mac_set:1;
@@ -166,56 +165,52 @@ typedef struct eoe_param
    char dns_name[EOE_DNS_NAME_LENGTH];
 } eoe_param_t;
 
-/** Main EoE status data array. Structure gets filled with current information
- * variables during EoE receive and send operations.
- */
+/** 主EoE状态数据数组。结构在EoE接收和发送操作期间填充当前信息变量。 */
 static _EOEvar EOEvar;
 
-/** Main FoE configuration pointer data array. Structure is allocated and filled
- * by the application defining what preferences it requires.
- */
+/** 主FoE配置指针数据数组。结构由应用程序分配并填充，定义所需的偏好。 */
 static eoe_cfg_t * eoe_cfg;
 
-/** Local EoE variable holding cached IP information values.
- * To be set or read from the user application, eg. TCP/IP stack.
+/** 本地EoE变量，保存缓存的IP信息值。
+ * 由用户应用程序设置或读取，例如TCP/IP栈。
  */
 static eoe_param_t nic_ports[EOE_NUMBER_OF_PORTS];
 
-/** Local init/reset functions on frame receive init */
+/** 本地初始化/重置函数，在帧接收初始化时调用 */
 static void EOE_init_rx ();
-/** Local init/reset functions on frame send completion */
+/** 本地初始化/重置函数，在帧发送完成时调用 */
 static void EOE_init_tx ();
 
-/** EoE utility function to convert uint32 to eoe ip bytes.
- * @param[in] ip       = ip in uint32
- * @param[out] byte_ip = eoe ip 4th octet, 3ed octet, 2nd octet, 1st octet
+/** EoE工具函数，将uint32转换为EoE IP字节。
+ * @param[in] ip       = uint32格式的IP
+ * @param[out] byte_ip = EoE IP的第4个八位字节、第3个八位字节、第2个八位字节、第1个八位字节
  */
 static void EOE_ip_uint32_to_byte (eoe_ip4_addr_t * ip, uint8_t * byte_ip)
 {
-   byte_ip[3] = eoe_ip4_addr1(ip); /* 1st octet */
-   byte_ip[2] = eoe_ip4_addr2(ip); /* 2nd octet */
-   byte_ip[1] = eoe_ip4_addr3(ip); /* 3ed octet */
-   byte_ip[0] = eoe_ip4_addr4(ip); /* 4th octet */
+   byte_ip[3] = eoe_ip4_addr1(ip); /* 第1个八位字节 */
+   byte_ip[2] = eoe_ip4_addr2(ip); /* 第2个八位字节 */
+   byte_ip[1] = eoe_ip4_addr3(ip); /* 第3个八位字节 */
+   byte_ip[0] = eoe_ip4_addr4(ip); /* 第4个八位字节 */
 }
 
-/** EoE utility function to convert eoe ip bytes to uint32.
- * @param[in] byte_ip = eoe ip 4th octet, 3ed octet, 2nd octet, 1st octet
- * @param[out] ip     = ip in uint32
+/** EoE工具函数，将EoE IP字节转换为uint32。
+ * @param[in] byte_ip = EoE IP的第4个八位字节、第3个八位字节、第2个八位字节、第1个八位字节
+ * @param[out] ip     = uint32格式的IP
  */
 static void EOE_ip_byte_to_uint32 (uint8_t * byte_ip, eoe_ip4_addr_t * ip)
 {
    EOE_IP4_ADDR_TO_U32(ip,
-         byte_ip[3],  /* 1st octet */
-         byte_ip[2],  /* 2nd octet */
-         byte_ip[1],  /* 3ed octet */
-         byte_ip[0]) ;/* 4th octet */
+         byte_ip[3],  /* 第1个八位字节 */
+         byte_ip[2],  /* 第2个八位字节 */
+         byte_ip[1],  /* 第3个八位字节 */
+         byte_ip[0]) ;/* 第4个八位字节 */
 }
 
-/** Get EoE cached MAC address
+/** 获取EoE缓存的MAC地址
  *
- * @param[in] port   = get MAC for port
- * @param[out] mac   = variable to store mac in, should fit EOE_ETHADDR_LENGTH
- * @return 0= if we succeed, -1 if not set
+ * @param[in] port   = 获取指定端口的MAC地址
+ * @param[out] mac   = 存储MAC地址的变量，应该适合EOE_ETHADDR_LENGTH
+ * @return 0=成功，-1=未设置
  */
 int EOE_ecat_get_mac(uint8_t port, uint8_t mac[])
 {
@@ -236,11 +231,11 @@ int EOE_ecat_get_mac(uint8_t port, uint8_t mac[])
    return ret;
 }
 
-/** Set EoE cached MAC address
+/** 设置EoE缓存的MAC地址
  *
- * @param[in] port   = get MAC for port
- * @param[in] mac    = mac address to store
- * @return 0= if we succeed, else -1.
+ * @param[in] port   = 获取指定端口的MAC地址
+ * @param[in] mac    = 要存储的MAC地址
+ * @return 0=成功，其他=-1。
  */
 int EOE_ecat_set_mac(uint8_t port, uint8_t mac[])
 {
@@ -256,11 +251,11 @@ int EOE_ecat_set_mac(uint8_t port, uint8_t mac[])
    return ret;
 }
 
-/** Get EoE cached ip address
+/** 获取EoE缓存的IP地址
  *
- * @param[in] port  = get ip address for port
- * @param[out] ip   = variable to store ip in
- * @return 0= if we succeed, -1 if not set
+ * @param[in] port  = 获取指定端口的IP地址
+ * @param[out] ip   = 存储IP地址的变量
+ * @return 0=成功，-1=未设置
  */
 int EOE_ecat_get_ip(uint8_t port, uint32_t * ip)
 {
@@ -278,11 +273,11 @@ int EOE_ecat_get_ip(uint8_t port, uint32_t * ip)
    return ret;
 }
 
-/** Set EoE cached ip address
+/** 设置EoE缓存的IP地址
  *
- * @param[in] port   = get ip for port
- * @param[in] ip     = ip address to store
- * @return 0= if we succeed, else -1.
+ * @param[in] port   = 获取指定端口的IP
+ * @param[in] ip     = 要存储的IP地址
+ * @return 0=成功，其他=-1。
  */
 int EOE_ecat_set_ip(uint8_t port, uint32_t  ip)
 {
@@ -298,11 +293,11 @@ int EOE_ecat_set_ip(uint8_t port, uint32_t  ip)
    return ret;
 }
 
-/** Get EoE cached subnet ip address
+/** 获取EoE缓存的子网IP地址
  *
- * @param[in] port    = get ip address for port
- * @param[out] subnet = variable to store ip in
- * @return 0= if we succeed, -1 if not set
+ * @param[in] port    = 获取指定端口的IP地址
+ * @param[out] subnet = 存储IP地址的变量
+ * @return 0=成功，-1=未设置
  */
 int EOE_ecat_get_subnet(uint8_t port, uint32_t * subnet)
 {
@@ -320,11 +315,11 @@ int EOE_ecat_get_subnet(uint8_t port, uint32_t * subnet)
    return ret;
 }
 
-/** Set EoE cached subnet ip address
+/** 设置EoE缓存的子网IP地址
  *
- * @param[in] port   = get ip for port
- * @param[in] subnet = ip address to store
- * @return 0= if we succeed, else -1.
+ * @param[in] port   = 获取指定端口的IP
+ * @param[in] subnet = 要存储的IP地址
+ * @return 0=成功，其他=-1。
  */
 int EOE_ecat_set_subnet(uint8_t port, uint32_t subnet)
 {
@@ -340,11 +335,11 @@ int EOE_ecat_set_subnet(uint8_t port, uint32_t subnet)
    return ret;
 }
 
-/** Get EoE cached default gateway ip address
+/** 获取EoE缓存的默认网关IP地址
  *
- * @param[in] port             = get ip address for port
- * @param[out] default_gateway = variable to store ip in
- * @return 0= if we succeed, -1 if not set
+ * @param[in] port             = 获取指定端口的IP地址
+ * @param[out] default_gateway = 存储IP地址的变量
+ * @return 0=成功，-1=未设置
  */
 int EOE_ecat_get_gateway(uint8_t port, uint32_t * default_gateway)
 {
@@ -363,11 +358,11 @@ int EOE_ecat_get_gateway(uint8_t port, uint32_t * default_gateway)
    return ret;
 }
 
-/** Set EoE cached default gateway ip address
+/** 设置EoE缓存的默认网关IP地址
  *
- * @param[in] port            = get ip for port
- * @param[in] default_gateway = ip address to store
- * @return 0= if we succeed, else -1.
+ * @param[in] port            = 获取指定端口的IP
+ * @param[in] default_gateway = 要存储的IP地址
+ * @return 0=成功，其他=-1。
  */
 int EOE_ecat_set_gateway(uint8_t port, uint32_t default_gateway)
 {
@@ -384,11 +379,11 @@ int EOE_ecat_set_gateway(uint8_t port, uint32_t default_gateway)
    return ret;
 }
 
-/** Get EoE cached dns ip address
+/** 获取EoE缓存的DNS IP地址
  *
- * @param[in] port    = get ip address for port
- * @param[out] dns_ip = variable to store ip in
- * @return 0= if we succeed, -1 if not set
+ * @param[in] port    = 获取指定端口的IP地址
+ * @param[out] dns_ip = 存储IP地址的变量
+ * @return 0=成功，-1=未设置
  */
 int EOE_ecat_get_dns_ip(uint8_t port, uint32_t * dns_ip)
 {
@@ -406,11 +401,11 @@ int EOE_ecat_get_dns_ip(uint8_t port, uint32_t * dns_ip)
    return ret;
 }
 
-/** Set EoE cached dns ip address
+/** 设置EoE缓存的DNS IP地址
  *
- * @param[in] port   = get ip for port
- * @param[in] dns_ip = ip address to store
- * @return 0= if we succeed, else -1.
+ * @param[in] port   = 获取指定端口的IP
+ * @param[in] dns_ip = 要存储的IP地址
+ * @return 0=成功，其他=-1。
  */
 int EOE_ecat_set_dns_ip(uint8_t port, uint32_t dns_ip)
 {
@@ -426,11 +421,11 @@ int EOE_ecat_set_dns_ip(uint8_t port, uint32_t dns_ip)
    return ret;
 }
 
-/** Get EoE cached dns name
+/** 获取EoE缓存的DNS名称
  *
- * @param[in] port      = get dns name for port
- * @param[out] dns_name = variable to store dns name in
- * @return 0= if we succeed, -1 if not set
+ * @param[in] port      = 获取指定端口的DNS名称
+ * @param[out] dns_name = 存储DNS名称的变量
+ * @return 0=成功，-1=未设置
  */
 int EOE_ecat_get_dns_name(uint8_t port, char * dns_name)
 {
@@ -450,11 +445,11 @@ int EOE_ecat_get_dns_name(uint8_t port, char * dns_name)
    return ret;
 }
 
-/** Set EoE cached dns name
+/** 设置EoE缓存的DNS名称
  *
- * @param[in] port     = get dns name for port
- * @param[in] dns_name = dns name to store
- * @return 0= if we succeed, else -1.
+ * @param[in] port     = 获取指定端口的DNS名称
+ * @param[in] dns_name = 要存储的DNS名称
+ * @return 0=成功，其他=-1。
  */
 int EOE_ecat_set_dns_name(uint8_t port, char * dns_name)
 {
@@ -473,17 +468,17 @@ int EOE_ecat_set_dns_name(uint8_t port, char * dns_name)
    return ret;
 }
 
-/** Function for sending an simple EOE response frame.
+/** 发送简单的EoE响应帧的函数。
  *
- * @param[in] frametype1 = frame type of response
- * @param[in] result    = result code
+ * @param[in] frametype1 = 响应的帧类型
+ * @param[in] result     = 结果代码
  */
 static void EOE_no_data_response (uint16_t frameinfo1, uint16_t result)
 {
    _EOE *eoembx;
    uint8_t mbxhandle;
 
-   /* Send back a response packet. */
+   /* 发送响应数据包。 */
    mbxhandle = ESC_claimbuffer ();
    if (mbxhandle)
    {
@@ -496,7 +491,7 @@ static void EOE_no_data_response (uint16_t frameinfo1, uint16_t result)
    }
 }
 
-/** EoE get IP param request handler. Will send a get IP param response.
+/** EoE获取IP参数请求处理器。将发送获取IP参数响应。
  */
 static void EOE_get_ip (void)
 {
@@ -517,23 +512,23 @@ static void EOE_get_ip (void)
 
    if(port  > EOE_NUMBER_OF_PORTS)
    {
-      DPRINT("Invalid port\n");
+      DPRINT("无效的端口\n");
       frameinfo1 = EOE_HDR_FRAME_PORT_SET(port);
       frameinfo1 |= EOE_INIT_RESP;
       frameinfo1 |= EOE_HDR_LAST_FRAGMENT;
-      /* Return error response on given port */
+      /* 返回给定端口的错误响应 */
       EOE_no_data_response(frameinfo1,
             EOE_RESULT_UNSPECIFIED_ERROR);
       return;
    }
 
-   /* Refresh settings if needed */
+   /* 如果需要，刷新设置 */
    if(eoe_cfg->load_eth_settings != NULL)
    {
       (void)eoe_cfg->load_eth_settings();
    }
 
-   /* Send back an response packet. */
+   /* 发送响应数据包。 */
    mbxhandle = ESC_claimbuffer ();
    if (mbxhandle)
    {
@@ -546,66 +541,65 @@ static void EOE_get_ip (void)
       eoembx->eoeheader.frameinfo1 = htoes(frameinfo1);
       eoembx->eoeheader.frameinfo2 = 0;
 
-      /* include mac in get ip request */
+      /* 在获取IP请求中包含MAC */
       port_ix = EOE_PORT_INDEX(port);
       if(nic_ports[port_ix].mac_set)
       {
          flags |= EOE_PARAM_MAC_INCLUDE;
-         memcpy(&eoembx->data[data_offset] ,
+         memcpy(&eoembx->data[data_offset],
                nic_ports[port_ix].mac.addr,
                EOE_ETHADDR_LENGTH);
-         /* Add size of mac address */
+         /* 增加MAC地址的大小 */
          data_offset += EOE_ETHADDR_LENGTH;
-
       }
-      /* include ip in get ip request */
+      /* 在获取IP请求中包含IP */
       if(nic_ports[port_ix].ip_set)
       {
          flags |= EOE_PARAM_IP_INCLUDE;
          EOE_ip_uint32_to_byte(&nic_ports[port_ix].ip,
                &eoembx->data[data_offset]);
-         /* Add size of uint32 IP address */
+         /* 增加uint32 IP地址的大小 */
          data_offset += EOE_IP4_LENGTH;
       }
 
-      /* include subnet in get ip request */
+      /* 在获取IP请求中包含子网 */
       if(nic_ports[port_ix].subnet_set)
       {
          flags |= EOE_PARAM_SUBNET_IP_INCLUDE;
          EOE_ip_uint32_to_byte(&nic_ports[port_ix].subnet,
                &eoembx->data[data_offset]);
-         /* Add size of uint32 IP address */
+         /* 增加uint32 IP地址的大小 */
          data_offset += EOE_IP4_LENGTH;
       }
 
-      /* include default gateway in get ip request */
+      /* 在获取IP请求中包含默认网关 */
       if(nic_ports[port_ix].default_gateway_set)
       {
          flags |= EOE_PARAM_DEFAULT_GATEWAY_INCLUDE;
          EOE_ip_uint32_to_byte(&nic_ports[port_ix].default_gateway,
                &eoembx->data[data_offset]);
-         /* Add size of uint32 IP address */
+         /* 增加uint32 IP地址的大小 */
          data_offset += EOE_IP4_LENGTH;
       }
-      /* include dns ip in get ip request */
+      /* 在获取IP请求中包含DNS IP */
       if(nic_ports[port_ix].dns_ip_set)
       {
          flags |= EOE_PARAM_DNS_IP_INCLUDE;
          EOE_ip_uint32_to_byte(&nic_ports[port_ix].dns_ip,
                &eoembx->data[data_offset]);
-         /* Add size of uint32 IP address */
+         /* 增加uint32 IP地址的大小 */
          data_offset += EOE_IP4_LENGTH;
       }
 
-      /* include dns name in get ip request */
+      /* 在获取IP请求中包含DNS名称 */
       if(nic_ports[port_ix].dns_name_set)
       {
-         /* TwinCAT include EOE_DNS_NAME_LENGTH chars even if name is shorter */
+         /* TwinCAT 包含EOE_DNS_NAME_LENGTH个字符，即使名称更短 */
          flags |= EOE_PARAM_DNS_NAME_INCLUDE;
          memcpy(&eoembx->data[data_offset],
                nic_ports[port_ix].dns_name,
                EOE_DNS_NAME_LENGTH);
-         /* Add size of dns name length */
+         /* 增加DNS名称长度的大小 */
          data_offset += EOE_DNS_NAME_LENGTH;
       }
 
@@ -614,7 +608,7 @@ static void EOE_get_ip (void)
    }
 }
 
-/** EoE set IP param request handler. Will send a set IP param response.
+/** EoE设置IP参数请求处理器。将发送设置IP参数响应。
  */
 static void EOE_set_ip (void)
 {
@@ -635,8 +629,8 @@ static void EOE_set_ip (void)
 
    if(port  > EOE_NUMBER_OF_PORTS)
    {
-      DPRINT("Invalid port\n");
-      /* Return error response on given port */
+      DPRINT("无效的端口\n");
+      /* 返回给定端口的错误响应 */
       frameinfo1 = EOE_HDR_FRAME_PORT_SET(port);
       frameinfo1 |= EOE_INIT_RESP;
       frameinfo1 |= EOE_HDR_LAST_FRAGMENT;
@@ -644,7 +638,7 @@ static void EOE_set_ip (void)
       return;
    }
 
-   /* mac included in set ip request? */
+   /* 在设置IP请求中包含MAC？ */
    port_ix = EOE_PORT_INDEX(port);
    if(flags & EOE_PARAM_MAC_INCLUDE)
    {
@@ -652,46 +646,46 @@ static void EOE_set_ip (void)
             &eoembx->data[data_offset],
             EOE_ETHADDR_LENGTH);
       nic_ports[port_ix].mac_set = 1;
-      /* Add size of mac address */
+      /* 增加MAC地址的大小 */
       data_offset += EOE_ETHADDR_LENGTH;
    }
-   /* ip included in set ip request? */
+   /* 在设置IP请求中包含IP？ */
    if(flags & EOE_PARAM_IP_INCLUDE)
    {
       EOE_ip_byte_to_uint32(&eoembx->data[data_offset],
             &nic_ports[port_ix].ip);
       nic_ports[port_ix].ip_set = 1;
-      /* Add size of uint32 IP address */
+      /* 增加uint32 IP地址的大小 */
       data_offset += EOE_IP4_LENGTH;
    }
-   /* subnet included in set ip request? */
+   /* 在设置IP请求中包含子网？ */
    if(flags & EOE_PARAM_SUBNET_IP_INCLUDE)
    {
       EOE_ip_byte_to_uint32(&eoembx->data[data_offset],
             &nic_ports[port_ix].subnet);
       nic_ports[port_ix].subnet_set = 1;
-      /* Add size of uint32 IP address */
+      /* 增加uint32 IP地址的大小 */
       data_offset += EOE_IP4_LENGTH;
    }
-   /* default gateway included in set ip request? */
+   /* 在设置IP请求中包含默认网关？ */
    if(flags & EOE_PARAM_DEFAULT_GATEWAY_INCLUDE)
    {
       EOE_ip_byte_to_uint32(&eoembx->data[data_offset],
             &nic_ports[port_ix].default_gateway);
       nic_ports[port_ix].default_gateway_set = 1;
-      /* Add size of uint32 IP address */
+      /* 增加uint32 IP地址的大小 */
       data_offset += EOE_IP4_LENGTH;
    }
-   /* dns ip included in set ip request? */
+   /* 在设置IP请求中包含DNS IP？ */
    if(flags & EOE_PARAM_DNS_IP_INCLUDE)
    {
       EOE_ip_byte_to_uint32(&eoembx->data[data_offset],
             &nic_ports[port_ix].dns_ip);
       nic_ports[port_ix].dns_ip_set = 1;
-      /* Add size of uint32 IP address */
+      /* 增加uint32 IP地址的大小 */
       data_offset += EOE_IP4_LENGTH;
    }
-   /* dns name included in set ip request? */
+   /* 在设置IP请求中包含DNS名称？ */
    if(flags & EOE_PARAM_DNS_NAME_INCLUDE)
    {
       uint32_t dns_len = MIN((eoedatasize - data_offset), EOE_DNS_NAME_LENGTH);
@@ -699,7 +693,7 @@ static void EOE_set_ip (void)
             &eoembx->data[data_offset],
             dns_len);
       nic_ports[port_ix].dns_name_set = 1;
-      data_offset += dns_len; /* expected 1- EOE_DNS_NAME_LENGTH; */
+      data_offset += dns_len; /* 期望1-EOE_DNS_NAME_LENGTH; */
    }
 
    if(data_offset > eoedatasize)
@@ -708,8 +702,8 @@ static void EOE_set_ip (void)
    }
    else
    {
-      /* Application specific store settings function. From there
-       * you typically set the IP for the TCP/IP stack */
+      /* 应用程序特定的存储设置函数。通常在这里
+       * 设置TCP/IP栈的IP */
       if(eoe_cfg->store_ethernet_settings != NULL)
       {
          result = (uint16_t)eoe_cfg->store_ethernet_settings();
@@ -725,7 +719,8 @@ static void EOE_set_ip (void)
    EOE_no_data_response(frameinfo1, result);
 }
 
-/** EoE receive fragment handler.
+
+/** EoE接收片段处理器。
  */
 static void EOE_receive_fragment (void)
 {
@@ -735,24 +730,24 @@ static void EOE_receive_fragment (void)
    uint16_t frameinfo1 = etohs(eoembx->eoeheader.frameinfo1);
    uint16_t frameinfo2 = etohs(eoembx->eoeheader.frameinfo2);
 
-   /* Capture error case */
+   /* 捕获错误情况 */
    if(EOEvar.rxfragmentno != EOE_HDR_FRAG_NO_GET(frameinfo2))
    {
-      DPRINT("Unexpected fragment number %"PRIu32", expected: %"PRIu32"\n",
+      DPRINT("意外的片段编号 %"PRIu32"，期望: %"PRIu32"\n",
             EOE_HDR_FRAG_NO_GET(frameinfo2), EOEvar.rxfragmentno);
-      /* Clean up existing saved data */
+      /* 清理现有保存的数据 */
       if(EOEvar.rxfragmentno != 0)
       {
          EOE_init_rx();
       }
-      /* Skip fragment if not start of new frame */
+      /* 如果不是新帧的开始，则跳过片段 */
       if(EOE_HDR_FRAG_NO_GET(frameinfo2) > 0)
       {
          return;
       }
    }
 
-   /* Start of new frame at fragment 0 */
+   /* 在片段0开始新帧 */
    if(EOEvar.rxfragmentno == 0)
    {
       EOEvar.rxframesize = (EOE_HDR_FRAME_OFFSET_GET(frameinfo2) << 5);
@@ -765,33 +760,33 @@ static void EOE_receive_fragment (void)
       }
       else
       {
-         DPRINT("Receive buffer is invalid\n");
+         DPRINT("接收缓冲区无效\n");
          EOE_init_rx ();
          return;
       }
    }
-   /* In frame fragment received */
+   /* 在帧中接收到片段 */
    else
    {
       uint32_t offset = (EOE_HDR_FRAME_OFFSET_GET(frameinfo2) << 5);
-      /* Validate received fragment */
+      /* 验证接收到的片段 */
       if(EOEvar.rxframeno != EOE_HDR_FRAME_NO_GET(frameinfo2))
       {
-         DPRINT("Unexpected frame number %"PRIu32", expected: %"PRIu32"\n",
+         DPRINT("意外的帧编号 %"PRIu32"，期望: %"PRIu32"\n",
                EOE_HDR_FRAME_NO_GET(frameinfo2), EOEvar.rxframeno);
          EOE_init_rx ();
          return;
       }
       else if(EOEvar.rxframeoffset != offset)
       {
-         DPRINT("Unexpected frame offset %"PRIu32", expected: %"PRIu32"\n",
+         DPRINT("意外的帧偏移 %"PRIu32"，期望: %"PRIu32"\n",
                offset, EOEvar.rxframeoffset);
          EOE_init_rx ();
          return;
       }
    }
 
-   /* Check so allocated buffer is sufficient */
+   /* 检查分配的缓冲区是否足够 */
    if ((EOEvar.rxframeoffset + eoedatasize) <= EOEvar.rxframesize)
    {
       memcpy((uint8_t *)(EOEvar.rxebuf.payload + EOEvar.rxframeoffset),
@@ -802,14 +797,14 @@ static void EOE_receive_fragment (void)
    }
    else
    {
-      DPRINT("Size of data exceed available buffer size\n");
+      DPRINT("数据大小超过可用缓冲区大小\n");
       EOE_init_rx ();
       return;
    }
 
    if(EOE_HDR_LAST_FRAGMENT_GET(frameinfo1))
    {
-      /* Remove time stamp, TODO support for time stamp? */
+      /* 移除时间戳，TODO: 支持时间戳？ */
       if(EOE_HDR_TIME_APPEND_GET(frameinfo1))
       {
          EOEvar.rxframeoffset -= 4U;
@@ -817,13 +812,13 @@ static void EOE_receive_fragment (void)
       EOEvar.rxebuf.len =  EOEvar.rxframeoffset;
       eoe_cfg->handle_recv_buffer(EOE_HDR_FRAME_PORT_GET(frameinfo1),
             &EOEvar.rxebuf);
-      /* Pass ownership of buf to receive function */
+      /* 将缓冲区的所有权传递给接收函数 */
       EOEvar.rxebuf.payload = NULL;
       EOE_init_rx ();
    }
 }
 
-/** EoE send fragment handler.
+/** EoE发送片段处理器。
  */
 static void EOE_send_fragment ()
 {
@@ -835,10 +830,10 @@ static void EOE_send_fragment ()
    uint16_t frameinfo2;
    static uint8_t frameno = 0;
 
-   /* Do we have a current transfer on-going */
+   /* 我们是否有当前的传输正在进行 */
    if(EOEvar.txebuf.payload == NULL)
    {
-      /* Fetch a buffer if available */
+      /* 如果可用，获取一个缓冲区 */
       len = eoe_cfg->fetch_send_buffer(0, &EOEvar.txebuf);
       if(len > 0)
       {
@@ -850,19 +845,19 @@ static void EOE_send_fragment ()
       }
    }
 
-   /* Process the frame if we can get a free mailbox */
+   /* 如果可以获取一个空闲邮箱，则处理帧 */
    mbxhandle = ESC_claimbuffer ();
    if (mbxhandle)
    {
       len_to_send = (EOEvar.txframesize - EOEvar.txframeoffset);
       if((len_to_send + ESC_EOEHSIZE + ESC_MBXHSIZE) > ESC_MBXSIZE)
       {
-         /* Adjust to len in whole 32 octet blocks to fit specification*/
+         /* 调整为整个32字节块的长度以符合规范 */
          len_to_send =
                (((ESC_MBXSIZE - ESC_EOEHSIZE - ESC_MBXHSIZE) >> 5) << 5);
       }
 
-      /* TODO: port handling? */
+      /* TODO: 端口处理？ */
       if(len_to_send == (EOEvar.txframesize - EOEvar.txframeoffset))
       {
          frameinfo1 = EOE_HDR_LAST_FRAGMENT_SET(1);
@@ -873,10 +868,10 @@ static void EOE_send_fragment ()
       }
 
       uint16_t tempframe2;
-      /* Set fragment number */
+      /* 设置片段编号 */
       frameinfo2 = EOE_HDR_FRAG_NO_SET(EOEvar.txfragmentno);
 
-      /* Set complete size for fragment 0 or offset for in frame fragments */
+      /* 设置片段0的完整大小或帧内片段的偏移 */
       if(EOEvar.txfragmentno > 0)
       {
          tempframe2 = EOE_HDR_FRAME_OFFSET_SET((EOEvar.txframeoffset >> 5));
@@ -889,7 +884,7 @@ static void EOE_send_fragment ()
          frameno++;
       }
 
-      /* Set frame number */
+      /* 设置帧编号 */
       tempframe2 = EOE_HDR_FRAME_NO_SET(frameno);
       frameinfo2 |= tempframe2;
 
@@ -899,13 +894,13 @@ static void EOE_send_fragment ()
       eoembx->eoeheader.frameinfo1 = htoes(frameinfo1);
       eoembx->eoeheader.frameinfo2 = htoes(frameinfo2);
 
-      /* Copy data to mailbox */
+      /* 将数据复制到邮箱 */
       memcpy(eoembx->data,
             &EOEvar.txebuf.payload[EOEvar.txframeoffset],
             len_to_send);
       MBXcontrol[mbxhandle].state = MBXstate_outreq;
 
-      /* Did we complete the frame? */
+      /* 我们是否完成了帧？ */
       if(len_to_send == (EOEvar.txframesize - EOEvar.txframeoffset))
       {
          EOE_init_tx ();
@@ -922,37 +917,37 @@ static void EOE_send_fragment ()
    }
 }
 
-/** Initialize by clearing all current status variables and fetch new buffer.
+/** 初始化，通过清除所有当前状态变量并获取新缓冲区。
  */
 static void EOE_init_rx ()
 {
-   /* Reset RX transfer status variables */
+   /* 重置RX传输状态变量 */
    EOEvar.rxfragmentno = 0;
    EOEvar.rxframesize = 0;
    EOEvar.rxframeoffset = 0;
    EOEvar.rxframeno = 0;
 
-   /* Fetch buffer */
+   /* 获取缓冲区 */
    if(EOEvar.rxebuf.payload == NULL)
    {
       if(eoe_cfg->get_buffer != NULL)
       {
-         /* TODO: verify size VS buffer size */
+         /* TODO: 验证大小与缓冲区大小 */
          eoe_cfg->get_buffer(&EOEvar.rxebuf);
       }
    }
 }
 
-/** Initialize by clearing all current status variables and release old buffer.
+/** 初始化，通过清除所有当前状态变量并释放旧缓冲区。
  */
 static void EOE_init_tx ()
 {
-   /* Reset TX transfer status variables */
+   /* 重置TX传输状态变量 */
    EOEvar.txfragmentno = 0;
    EOEvar.txframesize = 0;
    EOEvar.txframeoffset = 0;
 
-   /* Release what seems as an abandoned buffer */
+   /* 释放看似被遗弃的缓冲区 */
    if((EOEvar.txebuf.payload != NULL))
    {
       if(eoe_cfg->free_buffer != NULL)
@@ -965,7 +960,7 @@ static void EOE_init_tx ()
    }
 }
 
-/** Initialize by clearing all current status variables.
+/** 初始化，通过清除所有当前状态变量。
  */
 void EOE_init ()
 {
@@ -974,20 +969,19 @@ void EOE_init ()
    EOE_init_rx ();
 }
 
-/** Function copying the application configuration variable
- * to the EoE module local pointer variable.
+/** 将应用程序配置变量复制到EoE模块本地指针变量的函数
  *
- * @param[in] cfg       = Pointer to by the Application static declared
- * configuration variable holding application specific details.
+ * @param[in] cfg       = 指向由应用程序静态声明的配置变量的指针
+ *                      ，持有特定于应用程序的详细信息。
  */
 void EOE_config (eoe_cfg_t * cfg)
 {
    eoe_cfg = cfg;
 }
 
-/** Main EoE receive function checking the status on current mailbox buffers
- * carrying data, distributing the mailboxes to appropriate EOE functions
- * depending on requested frametype.
+/** 主EoE接收函数，检查当前邮箱缓冲区的状态
+ * 承载数据，将邮箱分配给适当的EoE函数
+ * 取决于请求的帧类型。
  */
 void ESC_eoeprocess (void)
 {
@@ -1010,7 +1004,7 @@ void ESC_eoeprocess (void)
    if (ESCvar.xoe == MBXEOE)
    {
       eoembx = (_EOE *) &MBX[0];
-      /* Verify the size of the file data. */
+      /* 验证文件数据的大小。 */
       if (etohs (eoembx->mbxheader.length) < ESC_EOEHSIZE)
       {
          EOE_no_data_response (
@@ -1059,11 +1053,12 @@ void ESC_eoeprocess (void)
       ESCvar.xoe = 0;
    }
 }
-/** EoE function to send a fragment.
- * NOTE: Not thread safe, should be called from the SOES task sequential
- * with other mailbox functions. Add support for threading by adding
- * a thread safe application fetch function, example a mailbox with buffers
- * to send, posted by TCP/IP stack and fetched by SOES task.
+
+/** EoE发送片段的函数。
+ * 注意：不线程安全，应从SOES任务中顺序调用
+ * 与其他邮箱函数一起。通过添加
+ * 线程安全的应用程序获取函数来添加对线程的支持，例如一个带缓冲区的邮箱
+ * 由TCP/IP栈发布，由SOES任务获取。
  */
 void ESC_eoeprocess_tx (void)
 {
@@ -1073,3 +1068,4 @@ void ESC_eoeprocess_tx (void)
    }
    EOE_send_fragment ();
 }
+
