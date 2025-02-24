@@ -1,11 +1,10 @@
 /*
- * Licensed under the GNU General Public License version 2 with exceptions. See
- * LICENSE file in the project root for full license information
+ * 根据GNU通用公共许可证第2版及其例外条款授权。有关完整的许可证信息，请参见项目根目录中的LICENSE文件
  */
 
 /** \file
  * \brief
- * Headerfile for esc_eoe.c
+ * esc_eoe.c的头文件
  */
 
 #ifndef __esc_eoe__
@@ -15,35 +14,31 @@
 
 typedef struct eoe_pbuf
 {
-   /** Pointer to frame buffer type used by a TCP/IP stack. (Not mandatory) */
+   /** 指向用于TCP/IP栈的帧缓冲区类型的指针（非必需） */
    void * pbuf;
-   /** Pointer to frame buffer to send or read from */
+   /** 指向要发送或读取的帧缓冲区的指针 */
    uint8_t * payload;
-   /** Length of data in frame buffer */
+   /** 帧缓冲区中数据的长度 */
    size_t len;
 } eoe_pbuf_t;
 
 typedef struct eoe_cfg
 {
-   /** Callback function to get a frame buffer for storage of received frame */
+   /** 获取用于存储接收帧的帧缓冲区的回调函数 */
    void (*get_buffer) (eoe_pbuf_t * ebuf);
-   /** Callback function to free a frame buffer */
+   /** 释放帧缓冲区的回调函数 */
    void (*free_buffer) (eoe_pbuf_t * ebuf);
-   /** Callback function to read local settings and update EtherCAT variables
-    *  to be delivered to the EtherCAT Master
-    */
+   /** 读取本地设置并更新要传递给EtherCAT主站的EtherCAT变量的回调函数 */
    int  (*load_eth_settings) (void);
-   /** Callback function to read settings provided by the EtherCAT master
-    * and store to local settings.
-    */
+   /** 读取EtherCAT主站提供的设置并存储到本地设置的回调函数 */
    int  (*store_ethernet_settings) (void);
-   /** Callback to frame receive function in TCP(IP stack,
-    *  caller should free the buffer
-    * */
+   /** TCP/IP栈中帧接收函数的回调，
+    * 调用者应释放缓冲区
+    */
    void (*handle_recv_buffer) (uint8_t port, eoe_pbuf_t * ebuf);
-   /** Callback to fetch a buffer to send */
+   /** 获取要发送的缓冲区的回调 */
    int (*fetch_send_buffer) (uint8_t port, eoe_pbuf_t * ebuf);
-   /** Callback to notify the application fragment sent */
+   /** 通知应用程序片段已发送的回调 */
    void (*fragment_sent_event) (void);
 } eoe_cfg_t;
 
