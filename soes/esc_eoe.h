@@ -14,31 +14,31 @@
 
 typedef struct eoe_pbuf
 {
-   /** 指向用于TCP/IP栈的帧缓冲区类型的指针（非必需） */
+   /** 指向用于TCP/IP栈的lwip buffer类型的指针（非必需） */
    void * pbuf;
-   /** 指向要发送或读取的帧缓冲区的指针 */
+   /** 指向要发送或读取的lwip buffer的指针 */
    uint8_t * payload;
-   /** 帧缓冲区中数据的长度 */
+   /** lwip buffer中数据的长度 */
    size_t len;
 } eoe_pbuf_t;
 
 typedef struct eoe_cfg
 {
-   /** 获取用于存储接收帧的帧缓冲区的回调函数 */
+   /** 获取用于存储接收帧的lwipbuffer */
    void (*get_buffer) (eoe_pbuf_t * ebuf);
-   /** 释放帧缓冲区的回调函数 */
+   /** 释放lwip buffer */
    void (*free_buffer) (eoe_pbuf_t * ebuf);
-   /** 读取本地设置并更新要传递给EtherCAT主站的EtherCAT变量的回调函数 */
+   /** 读取本地设置并更新要传递给EtherCAT主站的EtherCAT变量 */
    int  (*load_eth_settings) (void);
-   /** 读取EtherCAT主站提供的设置并存储到本地设置的回调函数 */
+   /** 读取EtherCAT主站提供的设置并存储到本地设置 */
    int  (*store_ethernet_settings) (void);
-   /** TCP/IP栈中帧接收函数的回调，
-    * 调用者应释放缓冲区
+   /** TCP/IP栈中帧接收函数，
+    * 调用者应释放lwip buffer
     */
    void (*handle_recv_buffer) (uint8_t port, eoe_pbuf_t * ebuf);
-   /** 获取要发送的缓冲区的回调 */
+   /** 获取要发送的lwip buffer */
    int (*fetch_send_buffer) (uint8_t port, eoe_pbuf_t * ebuf);
-   /** 通知应用程序片段已发送的回调 */
+   /** 通知应用程序片段已发送 */
    void (*fragment_sent_event) (void);
 } eoe_cfg_t;
 
