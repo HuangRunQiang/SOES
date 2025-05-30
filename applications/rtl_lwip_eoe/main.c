@@ -104,7 +104,7 @@ void cb_state_change (uint8_t * as, uint8_t * an) // 状态变化回调
    }
 }
 
-/* 获取缓冲区的回调 */
+/* 获取缓冲区 */
 static void appl_get_buffer (eoe_pbuf_t * ebuf)
 {
    struct pbuf * p = pbuf_alloc(PBUF_RAW, PBUF_POOL_BUFSIZE, PBUF_POOL); // 分配pbuf
@@ -123,7 +123,7 @@ static void appl_get_buffer (eoe_pbuf_t * ebuf)
    }
 }
 
-/* 释放缓冲区的回调 */
+/* 释放缓冲区 */
 static void appl_free_buffer (eoe_pbuf_t * ebuf)
 {
    if(ebuf->pbuf != NULL)
@@ -132,7 +132,7 @@ static void appl_free_buffer (eoe_pbuf_t * ebuf)
    }
 }
 
-/* 处理接收到的获取IP请求的回调 */
+/* 从站处理接收到的 获取IP请求 */
 static int appl_load_eth_settings (void)
 {
    /*
@@ -144,7 +144,7 @@ static int appl_load_eth_settings (void)
    return 0; // 返回0表示成功
 }
 
-/* 处理接收到的设置IP请求的回调 */
+/* 从站处理接收到的设置IP请求帧 */
 static int appl_store_ethernet_settings (void)
 {
    int ret = 0; // 返回值初始化
@@ -189,7 +189,7 @@ static int appl_store_ethernet_settings (void)
    return ret; // 返回结果
 }
 
-/* 从栈中回调以处理完成的以太网帧。 */
+/* 从站把接收的EOE帧数据给到lwip。 */
 static void appl_handle_recv_buffer (uint8_t port, eoe_pbuf_t * ebuf)
 {
    struct pbuf * p = ebuf->pbuf;
@@ -227,7 +227,7 @@ static int appl_fetch_send_buffer (uint8_t port, eoe_pbuf_t * ebuf)
    int ret;
    struct pbuf *p;
 
-   if(mbox_fetch_tmo(pbuf_mbox, (void **)&p, 0)) // 从邮箱获取eoe响应数据
+   if(mbox_fetch_tmo(pbuf_mbox, (void **)&p, 0)) // ---------从邮箱获取eoe响应数据----------
    {
       ebuf->pbuf = NULL; // 设置pbuf为NULL
       ebuf->payload = NULL; // 设置负载为NULL
@@ -246,8 +246,8 @@ static int appl_fetch_send_buffer (uint8_t port, eoe_pbuf_t * ebuf)
 /* lwIP的linkout发送函数，获取经过lwip响应的数据帧，将以太网帧发送到lwip网口。 */
 static err_t transmit_frame (struct netif *netif, struct pbuf *p)
 {
-   /* 将lwip响应后的数据发送给从站邮箱 */
-   if(mbox_post_tmo(pbuf_mbox, p, 0))
+ 
+   if(mbox_post_tmo(pbuf_mbox, p, 0))  /* --------将lwip响应后的数据发送给从站邮箱 ----------*/
    {
       rprintf("传输帧超时，邮箱满？\n");
    }
