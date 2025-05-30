@@ -307,7 +307,7 @@ int main (void)
    };
 
    /* EoE的配置参数
-    * 与TCP/IP堆栈交互的函数回调
+    * 从站与lwip回调绑定
     */
    static eoe_cfg_t eoe_config =
    {
