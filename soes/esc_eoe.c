@@ -126,9 +126,9 @@ CC_PACKED_END
 
 typedef struct
 {
-   /** 指向当前RX缓冲区的指针 */
+   /** 指向当前RX lwip buffer的指针 */
    eoe_pbuf_t rxebuf;
-   /** 指向当前TX缓冲区的指针 */
+   /** 指向当前TX lwip buffer的指针 */
    eoe_pbuf_t txebuf;
 
    /** 当前RX片段编号 */
@@ -760,7 +760,7 @@ static void EOE_receive_fragment (void)
       }
       else
       {
-         DPRINT("接收缓冲区无效\n");
+         DPRINT("接收 lwip buffer无效\n");
          EOE_init_rx ();
          return;
       }
@@ -786,7 +786,7 @@ static void EOE_receive_fragment (void)
       }
    }
 
-   /* 检查分配的缓冲区是否足够 */
+   /* 检查分配的 lwip buffer是否足够 */
    if ((EOEvar.rxframeoffset + eoedatasize) <= EOEvar.rxframesize)
    {
       memcpy((uint8_t *)(EOEvar.rxebuf.payload + EOEvar.rxframeoffset),
@@ -797,7 +797,7 @@ static void EOE_receive_fragment (void)
    }
    else
    {
-      DPRINT("数据大小超过可用缓冲区大小\n");
+      DPRINT("数据大小超过可用 lwip buffer大小\n");
       EOE_init_rx ();
       return;
    }
@@ -812,7 +812,7 @@ static void EOE_receive_fragment (void)
       EOEvar.rxebuf.len =  EOEvar.rxframeoffset;
       eoe_cfg->handle_recv_buffer(EOE_HDR_FRAME_PORT_GET(frameinfo1),
             &EOEvar.rxebuf);
-      /* 将缓冲区的所有权传递给接收函数 */
+      /* 将 lwip buffer的所有权传递给接收函数 */
       EOEvar.rxebuf.payload = NULL;
       EOE_init_rx ();
    }
@@ -833,7 +833,7 @@ static void EOE_send_fragment ()
    /* 我们是否有当前的传输正在进行 */
    if(EOEvar.txebuf.payload == NULL)
    {
-      /* 如果可用，获取一个缓冲区 */
+      /* 如果可用，获取一个 lwip buffer */
       len = eoe_cfg->fetch_send_buffer(0, &EOEvar.txebuf);
       if(len > 0)
       {
@@ -917,7 +917,7 @@ static void EOE_send_fragment ()
    }
 }
 
-/** 初始化，通过清除所有当前状态变量并获取新缓冲区。
+/** 初始化，通过清除所有当前状态变量并获取新 lwip buffer。
  */
 static void EOE_init_rx ()
 {
@@ -927,18 +927,18 @@ static void EOE_init_rx ()
    EOEvar.rxframeoffset = 0;
    EOEvar.rxframeno = 0;
 
-   /* 获取缓冲区 */
+   /* 获取 lwip buffer */
    if(EOEvar.rxebuf.payload == NULL)
    {
       if(eoe_cfg->get_buffer != NULL)
       {
-         /* TODO: 验证大小与缓冲区大小 */
+         /* TODO: 验证大小与 lwip buffer大小 */
          eoe_cfg->get_buffer(&EOEvar.rxebuf);
       }
    }
 }
 
-/** 初始化，通过清除所有当前状态变量并释放旧缓冲区。
+/** 初始化，通过清除所有当前状态变量并释放旧 lwip buffer。
  */
 static void EOE_init_tx ()
 {
@@ -947,7 +947,7 @@ static void EOE_init_tx ()
    EOEvar.txframesize = 0;
    EOEvar.txframeoffset = 0;
 
-   /* 释放看似被遗弃的缓冲区 */
+   /* 释放看似被遗弃的 lwip buffer */
    if((EOEvar.txebuf.payload != NULL))
    {
       if(eoe_cfg->free_buffer != NULL)
