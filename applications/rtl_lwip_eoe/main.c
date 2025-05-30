@@ -221,13 +221,13 @@ static void appl_handle_recv_buffer (uint8_t port, eoe_pbuf_t * ebuf)
    }
 }
 
-/* 从栈中回调以获取已发布的以太网帧以发送到主站 */
+/* 获取邮箱中经过lwip响应后的数据，发送出去给主站 */
 static int appl_fetch_send_buffer (uint8_t port, eoe_pbuf_t * ebuf)
 {
    int ret;
    struct pbuf *p;
 
-   if(mbox_fetch_tmo(pbuf_mbox, (void **)&p, 0)) // 从邮箱获取pbuf
+   if(mbox_fetch_tmo(pbuf_mbox, (void **)&p, 0)) // 从邮箱获取eoe响应数据
    {
       ebuf->pbuf = NULL; // 设置pbuf为NULL
       ebuf->payload = NULL; // 设置负载为NULL
@@ -243,10 +243,10 @@ static int appl_fetch_send_buffer (uint8_t port, eoe_pbuf_t * ebuf)
    return ret; // 返回结果
 }
 
-/* lwIP的实用函数，用于将以太网帧发送到虚拟EtherCAT网络接口。 */
+/* lwIP的linkout发送函数，获取经过lwip响应的数据帧，将以太网帧发送到lwip网口。 */
 static err_t transmit_frame (struct netif *netif, struct pbuf *p)
 {
-   /* 尝试将缓冲区发布到EOE堆栈发送队列，如果发布失败，调用者将尝试释放缓冲区。 */
+   /* 将lwip响应后的数据发送给从站邮箱 */
    if(mbox_post_tmo(pbuf_mbox, p, 0))
    {
       rprintf("传输帧超时，邮箱满？\n");
@@ -260,7 +260,7 @@ static err_t transmit_frame (struct netif *netif, struct pbuf *p)
    return ERR_OK; // 返回成功
 }
 
-/* 创建一个虚拟的lwIP EtherCAT接口 */
+/* 创建一个虚拟ethercat网口（即lwip网络接口） */
 err_t eoe_netif_init (struct netif * netif)
 {
    rprintf("EOE eoe_netif_init 被调用\n");
